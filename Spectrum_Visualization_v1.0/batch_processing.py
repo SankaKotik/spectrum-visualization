@@ -39,7 +39,24 @@ try:
         srcaudio_path = getpath (f'src/music/{filename}')
         
         log.info (f' > Подготовка фанарта для {filename} --- ')
-        os.system (f'ffmpeg -hide_banner -i "{fanart_path}" -filter_complex "[0:v]scale=-1:{video_res.split ("x")[1]}:flags=lanczos,split=2[src][fg];[src]scale=ih*16/9:-1,crop=h=iw*9/16,boxblur=100[bg];[bg][fg]overlay=(W-w)/2:(H-h)/2" background.png')
+        
+        log.debug ('Adjusting the video resolution...')
+        os.system (f'ffprobe -v error -select_streams v -show_entries stream=width,height -of csv=p=0:s=x "{fanart_path}" > fanart_res.txt')
+        fanart_res = getpath ("fanart_res.txt")
+        
+        with open (fanart_res) as restext:
+            fanart_width, fanart_height = map (int, restext.read ().split ("x"))
+        
+        if fanart_width / fanart_height < 16 / 9:
+            log.debug ('provided image is vertical')
+            os.system (f'ffmpeg -hide_banner -i "{fanart_path}" -filter_complex "[0:v]scale=-1:{video_res.split ("x")[1]}:flags=lanczos,split=2[src][fg];[src]scale=ih*16/9:-1,crop=h=iw*9/16,boxblur=100[bg];[bg][fg]overlay=(W-w)/2:(H-h)/2" background.png')
+        elif fanart_width / fanart_height > 16 / 9:
+            log.debug ('provided image is horizontal')
+            os.system (f'ffmpeg -hide_banner -i "{fanart_path}" -filter_complex "[0:v]scale={video_res.split ("x")[0]}:-1:flags=lanczos,split=2[src][fg];[src]scale=-1:iw*9/16,crop=w=ih*16/9,boxblur=100[bg];[bg][fg]overlay=(W-w)/2:(H-h)/2" background.png')
+        else:
+            log.debug ('the aspect ratio of provided image is the same as we need, just rescaling')
+            os.system (f'ffmpeg -hide_banner -i "{fanart_path}" -vf "scale={video_res}" background.png')
+            
         log.debug ('Checking that ffmpeg outputs background.png and that it exists')
         background_path = getpath ('background.png')
         
@@ -72,7 +89,7 @@ try:
             os.makedirs (outdir)
         log.debug (f'moving output.mp4 to {outfile}')
         os.rename (final_video_path, outfile)
-        for file in (background_path, in_wav_path, out_wav_path, background_raw_path, spectrum_raw_path):
+        for file in (background_path, in_wav_path, out_wav_path, background_raw_path, spectrum_raw_path, fanart_res):
             log.debug (f'removing {file}')
             os.remove (file)
         sleep (15) # waiting until OS will be released
