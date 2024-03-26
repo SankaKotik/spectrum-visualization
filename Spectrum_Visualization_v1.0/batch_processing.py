@@ -79,7 +79,7 @@ video_res, encoder_settings, outfile_ext = \
 ['3840x2160', "-pix_fmt yuv420p -c:v libvpx-vp9 -crf 23 -row-mt 1 -c:a libopus -b:a 256k", "webm"] \
 if int (uhd_quality) else \
 ['1920x1080', "-pix_fmt yuv420p -c:v libx264 -profile:v high -preset slow -crf 18 -g 30 -bf 2 -c:a aac -profile:a aac_low -b:a 384k -movflags faststart", "mp4"]
-drawtext = ",drawtext=text=%s:fontcolor=whitesmoke:fontsize=(h/20):x='(w-text_w)/2':y='0.9*h':alpha='if(lt(t,0),0,if(lt(t,2),(t-0)/2,if(lt(t,8),1,if(lt(t,10),(2-(t-8))/2,0))))'" if int (draw_text) else ""
+drawtext = ",drawtext=text=%s:fontcolor=whitesmoke:fontsize=(h/20):x='(w-text_w)/2':y='0.9*h':alpha='if(lt(t,0),0,if(lt(t,2),(t-0)/2,if(lt(t,8),1,if(lt(t,10),(2-(t-8))/2,0))))':shadowx=2:shadowy=2" if int (draw_text) else ""
 
 conversion = f"""
 ffmpeg -hide_banner \
