@@ -141,7 +141,7 @@ try:
         background_raw_path, spectrum_raw_path = getpath ('background.raw'), getpath ('spectrum.raw')
         
         log.info (f' > Выполняю сборку видео {filename} --- ')
-        os.system (conversion % trackname [:64] if draw_text else conversion)
+        os.system (conversion % trackname [:64] if int (draw_text) else conversion)
         log.debug ('Checking that ffmpeg outputs final video and that it exists')
         final_video_path = getpath (f'output.{outfile_ext}')
         
